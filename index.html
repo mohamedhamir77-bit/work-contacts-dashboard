@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Work Contacts</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#263238">
+<style>
+body{margin:0;background:#f6f2e9;font-family:Arial;color:#1f2933}
+header{background:#263238;color:white;text-align:center;padding:16px}
+main{padding:12px;max-width:900px;margin:auto}
+.card{background:white;border:2px solid #ddd6ca;border-radius:18px;padding:14px;margin:12px 0}
+input,textarea,select{width:100%;box-sizing:border-box;font-size:16px;padding:11px;margin:5px 0;border:2px solid #ddd6ca;border-radius:12px}
+textarea{min-height:70px}
+button{border:0;border-radius:12px;padding:10px 12px;margin:4px;font-weight:bold;color:white;background:#263238}
+.green{background:#15803d}.red{background:#b91c1c}.blue{background:#2563eb}.gold{background:#9b7a3a}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tab{background:#e5e7eb;color:#111}.active{background:#263238;color:white}
+.hidden{display:none}
+.contact{background:#fffdfa;border:2px solid #ddd6ca;border-left:10px solid #2563eb;border-radius:14px;padding:12px;margin:10px 0}
+.gp{border-left-color:#15803d}.hospital{border-left-color:#b91c1c}.pharmacy{border-left-color:#2563eb}.pcn{border-left-color:#9b7a3a}.admin{border-left-color:#6b7280}.supplier{border-left-color:#7c3aed}.other{border-left-color:#d97706}
+.badge{display:inline-block;color:white;background:#2563eb;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin:2px}
+.note{border-top:1px solid #ddd6ca;margin-top:8px;padding-top:8px;white-space:pre-wrap}
+a{color:#2563eb;font-weight:bold}
+.stat{font-size:28px;font-weight:bold}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.tabs{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Work Contacts</h1></header>
+<main>
+
+<div class="tabs">
+<button id="tcontacts" class="tab active" onclick="show('contacts')">Contacts</button>
+<button id="tadd" class="tab" onclick="show('add')">Add</button>
+<button id="tprivate" class="tab" onclick="show('private')">Private Notes</button>
+<button id="tbackup" class="tab" onclick="show('backup')">Backup</button>
+</div>
+
+<section id="contacts">
+<div class="grid">
+<div class="card"><b>Total contacts</b><div class="stat" id="total">0</div></div>
+<div class="card"><b>Categories</b><div class="stat" id="catTotal">0</div></div>
+</div>
+
+<div class="card">
+<h2>Search contacts</h2>
+<input id="search" oninput="render()" placeholder="Search name, organisation, notes, email...">
+<select id="filter" onchange="render()">
+<option value="">All categories</option>
+<option>GP Practice</option>
+<option>Hospital</option>
+<option>Pharmacy</option>
+<option>PCN</option>
+<option>Admin</option>
+<option>Supplier</option>
+<option>Other</option>
+</select>
+<div id="contactList"></div>
+</div>
+</section>
+
+<section id="add" class="hidden">
+<div class="card">
+<h2>Add / Edit contact</h2>
+<input id="title" placeholder="Title e.g. Dr, Mr, Mrs, Ms">
+<input id="first" placeholder="First name">
+<input id="surname" placeholder="Surname">
+<input id="role" placeholder="Role / organisation">
+<input id="tel" placeholder="Telephone number">
+<input id="email" placeholder="Email address">
+<select id="category">
+<option>GP Practice</option>
+<option>Hospital</option>
+<option>Pharmacy</option>
+<option>PCN</option>
+<option>Admin</option>
+<option>Supplier</option>
+<option>Other</option>
+</select>
+<textarea id="notes" placeholder="Notes"></textarea>
+<button class="green" onclick="saveContact()">Save contact</button>
+<button class="red" onclick="clearForm()">Clear</button>
+</div>
+</section>
+
+<section id="private" class="hidden">
+<div class="card">
+<h2>Private notes</h2>
+<p><b>Important:</b> avoid storing real passwords here unless you accept the risk. Use iPhone Passwords/iCloud Keychain for actual passwords.</p>
+<input id="pTitle" placeholder="Note title e.g. NHS login hint">
+<textarea id="pText" placeholder="Private note or password hint"></textarea>
+<button class="gold" onclick="addPrivate()">Save private note</button>
+<div id="privateList"></div>
+</div>
+</section>
+
+<section id="backup" class="hidden">
+<div class="card">
+<h2>Backup</h2>
+<button class="blue" onclick="exportData()">Export backup</button>
+<textarea id="importBox" placeholder="Paste backup text here to restore"></textarea>
+<button class="green" onclick="importData()">Restore backup</button>
+<button class="red" onclick="resetAll()">Reset everything</button>
+</div>
+</section>
+
+</main>
+
+<script>
+let data=JSON.parse(localStorage.getItem("workContactsDash")||'{"contacts":[],"privateNotes":[]}');
+let editing=null;
+
+function save(){localStorage.setItem("workContactsDash",JSON.stringify(data));render()}
+function now(){return new Date().toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+function cls(cat){return String(cat||"other").toLowerCase().replace(" practice","").replace(" ","")}
+function show(page){
+["contacts","add","private","backup"].forEach(x=>document.getElementById(x).className=x==page?"":"hidden");
+["tcontacts","tadd","tprivate","tbackup"].forEach(x=>document.getElementById(x).className="tab");
+document.getElementById("t"+page).className="tab active";
+render();
+}
+
+function saveContact(){
+if(!surname.value.trim() && !first.value.trim())return;
+let c={
+id:editing||Date.now(),
+title:title.value,
+first:first.value,
+surname:surname.value,
+role:role.value,
+tel:tel.value,
+email:email.value,
+category:category.value,
+notes:notes.value,
+updated:now()
+};
+if(editing){data.contacts=data.contacts.map(x=>x.id==editing?c:x);editing=null}
+else data.contacts.push(c);
+clearForm();save();show("contacts");
+}
+
+function clearForm(){
+editing=null;
+title.value="";first.value="";surname.value="";role.value="";tel.value="";email.value="";notes.value="";
+}
+
+function editContact(id){
+let c=data.contacts.find(x=>x.id==id);if(!c)return;
+editing=id;
+title.value=c.title||"";first.value=c.first||"";surname.value=c.surname||"";role.value=c.role||"";tel.value=c.tel||"";email.value=c.email||"";category.value=c.category||"Other";notes.value=c.notes||"";
+show("add");
+}
+
+function deleteContact(id){
+if(confirm("Delete this contact?")){data.contacts=data.contacts.filter(x=>x.id!=id);save()}
+}
+
+function drawContact(c){
+let name=[c.title,c.first,c.surname].filter(Boolean).join(" ");
+return `<div class="contact ${cls(c.category)}">
+<h3>${name||"Unnamed contact"}</h3>
+<span class="badge">${c.category}</span>
+<p><b>${c.role||""}</b></p>
+${c.tel?`<p>Tel: <a href="tel:${c.tel}">${c.tel}</a></p>`:""}
+${c.email?`<p>Email: <a href="mailto:${c.email}">${c.email}</a></p>`:""}
+${c.notes?`<div class="note">${c.notes}</div>`:""}
+<small>Updated: ${c.updated||""}</small><br>
+<button class="blue" onclick="editContact(${c.id})">Edit</button>
+<button class="red" onclick="deleteContact(${c.id})">Delete</button>
+</div>`;
+}
+
+function addPrivate(){
+if(!pTitle.value.trim() && !pText.value.trim())return;
+data.privateNotes.push({id:Date.now(),title:pTitle.value,text:pText.value,time:now()});
+pTitle.value="";pText.value="";save();
+}
+
+function deletePrivate(id){
+if(confirm("Delete this private note?")){data.privateNotes=data.privateNotes.filter(x=>x.id!=id);save()}
+}
+
+function render(){
+let q=(search?.value||"").toLowerCase();
+let f=filter?.value||"";
+let contacts=data.contacts.slice().sort((a,b)=>(a.surname||"").localeCompare(b.surname||"") || (a.first||"").localeCompare(b.first||""));
+contacts=contacts.filter(c=>(!f||c.category==f) && JSON.stringify(c).toLowerCase().includes(q));
+total.textContent=data.contacts.length;
+catTotal.textContent=new Set(data.contacts.map(c=>c.category)).size;
+contactList.innerHTML=contacts.length?contacts.map(drawContact).join(""):"<p>No contacts found.</p>";
+
+privateList.innerHTML=data.privateNotes.length?data.privateNotes.slice().reverse().map(n=>`<div class="contact other"><h3>${n.title}</h3><div class="note">${n.text}</div><small>${n.time}</small><br><button class="red" onclick="deletePrivate(${n.id})">Delete</button></div>`).join(""):"<p>No private notes.</p>";
+}
+
+function exportData(){
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"text/plain"}));
+a.download="work-contacts-backup.txt";
+a.click();
+}
+
+function importData(){
+try{
+data=JSON.parse(importBox.value);
+save();
+alert("Backup restored");
+}catch(e){alert("Could not restore backup")}
+}
+
+function resetAll(){
+if(confirm("Delete all contacts and private notes?")){
+data={contacts:[],privateNotes:[]};
+save();
+}
+}
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js")}
+render();
+</script>
+</body>
+</html>
