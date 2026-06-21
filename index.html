@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Work Contacts</title>
+<title>Work Contacts V2</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#263238">
 <style>
 body{margin:0;background:#f6f2e9;font-family:Arial;color:#1f2933}
 header{background:#263238;color:white;text-align:center;padding:16px}
-main{padding:12px;max-width:900px;margin:auto}
+main{padding:12px;max-width:950px;margin:auto}
 .card{background:white;border:2px solid #ddd6ca;border-radius:18px;padding:14px;margin:12px 0}
 input,textarea,select{width:100%;box-sizing:border-box;font-size:16px;padding:11px;margin:5px 0;border:2px solid #ddd6ca;border-radius:12px}
 textarea{min-height:70px}
 button{border:0;border-radius:12px;padding:10px 12px;margin:4px;font-weight:bold;color:white;background:#263238}
 .green{background:#15803d}.red{background:#b91c1c}.blue{background:#2563eb}.gold{background:#9b7a3a}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .tab{background:#e5e7eb;color:#111}.active{background:#263238;color:white}
 .hidden{display:none}
 .contact{background:#fffdfa;border:2px solid #ddd6ca;border-left:10px solid #2563eb;border-radius:14px;padding:12px;margin:10px 0}
@@ -23,75 +23,55 @@ button{border:0;border-radius:12px;padding:10px 12px;margin:4px;font-weight:bold
 .badge{display:inline-block;color:white;background:#2563eb;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin:2px}
 .note{border-top:1px solid #ddd6ca;margin-top:8px;padding-top:8px;white-space:pre-wrap}
 a{color:#2563eb;font-weight:bold}
-.stat{font-size:28px;font-weight:bold}
+img{max-width:110px;border-radius:14px;margin:8px 0;border:2px solid #ddd6ca}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.tabs{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+.stat{font-size:28px;font-weight:bold}
+@media(max-width:650px){.tabs{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header><h1>Work Contacts</h1></header>
+<header><h1>Work Contacts V2</h1></header>
 <main>
 
 <div class="tabs">
 <button id="tcontacts" class="tab active" onclick="show('contacts')">Contacts</button>
-<button id="tadd" class="tab" onclick="show('add')">Add</button>
-<button id="tprivate" class="tab" onclick="show('private')">Private Notes</button>
+<button id="tfavs" class="tab" onclick="show('favs')">Favourites</button>
+<button id="torgs" class="tab" onclick="show('orgs')">Organisations</button>
+<button id="tprivate" class="tab" onclick="show('private')">Private</button>
 <button id="tbackup" class="tab" onclick="show('backup')">Backup</button>
 </div>
 
 <section id="contacts">
 <div class="grid">
 <div class="card"><b>Total contacts</b><div class="stat" id="total">0</div></div>
-<div class="card"><b>Categories</b><div class="stat" id="catTotal">0</div></div>
+<div class="card"><b>Favourites</b><div class="stat" id="favTotal">0</div></div>
 </div>
-
 <div class="card">
-<h2>Search contacts</h2>
-<input id="search" oninput="render()" placeholder="Search name, organisation, notes, email...">
+<h2>Search</h2>
+<input id="search" oninput="render()" placeholder="Search name, organisation, role, tags, notes...">
 <select id="filter" onchange="render()">
 <option value="">All categories</option>
-<option>GP Practice</option>
-<option>Hospital</option>
-<option>Pharmacy</option>
-<option>PCN</option>
-<option>Admin</option>
-<option>Supplier</option>
-<option>Other</option>
+<option>GP Practice</option><option>Hospital</option><option>Pharmacy</option><option>PCN</option><option>Admin</option><option>Supplier</option><option>Other</option>
 </select>
+<button class="green" onclick="newContact()">Add new contact</button>
 <div id="contactList"></div>
 </div>
 </section>
 
-<section id="add" class="hidden">
-<div class="card">
-<h2>Add / Edit contact</h2>
-<input id="title" placeholder="Title e.g. Dr, Mr, Mrs, Ms">
-<input id="first" placeholder="First name">
-<input id="surname" placeholder="Surname">
-<input id="role" placeholder="Role / organisation">
-<input id="tel" placeholder="Telephone number">
-<input id="email" placeholder="Email address">
-<select id="category">
-<option>GP Practice</option>
-<option>Hospital</option>
-<option>Pharmacy</option>
-<option>PCN</option>
-<option>Admin</option>
-<option>Supplier</option>
-<option>Other</option>
-</select>
-<textarea id="notes" placeholder="Notes"></textarea>
-<button class="green" onclick="saveContact()">Save contact</button>
-<button class="red" onclick="clearForm()">Clear</button>
-</div>
+<section id="favs" class="hidden">
+<div class="card"><h2>Favourite contacts</h2><div id="favList"></div></div>
+</section>
+
+<section id="orgs" class="hidden">
+<div class="card"><h2>Organisations</h2><div id="orgList"></div></div>
 </section>
 
 <section id="private" class="hidden">
 <div class="card">
 <h2>Private notes</h2>
-<p><b>Important:</b> avoid storing real passwords here unless you accept the risk. Use iPhone Passwords/iCloud Keychain for actual passwords.</p>
-<input id="pTitle" placeholder="Note title e.g. NHS login hint">
-<textarea id="pText" placeholder="Private note or password hint"></textarea>
+<p><b>Use for password hints, not real passwords.</b></p>
+<input id="pTitle" placeholder="Title e.g. NHS mail hint">
+<textarea id="pText" placeholder="Private note"></textarea>
 <button class="gold" onclick="addPrivate()">Save private note</button>
 <div id="privateList"></div>
 </div>
@@ -99,98 +79,125 @@ a{color:#2563eb;font-weight:bold}
 
 <section id="backup" class="hidden">
 <div class="card">
-<h2>Backup</h2>
+<h2>Backup / restore</h2>
 <button class="blue" onclick="exportData()">Export backup</button>
-<textarea id="importBox" placeholder="Paste backup text here to restore"></textarea>
+<textarea id="importBox" placeholder="Paste backup here"></textarea>
 <button class="green" onclick="importData()">Restore backup</button>
 <button class="red" onclick="resetAll()">Reset everything</button>
+</div>
+</section>
+
+<section id="edit" class="hidden">
+<div class="card">
+<h2>Add / Edit contact</h2>
+<label><input type="checkbox" id="fav"> Favourite ⭐</label>
+<input id="title" placeholder="Title e.g. Dr, Mr, Mrs">
+<input id="first" placeholder="First name">
+<input id="surname" placeholder="Surname">
+<input id="organisation" placeholder="Organisation">
+<input id="role" placeholder="Role">
+<input id="mainPhone" placeholder="Main phone">
+<input id="directPhone" placeholder="Direct line">
+<input id="mobile" placeholder="Mobile">
+<input id="email1" placeholder="Primary email">
+<input id="email2" placeholder="Secondary email">
+<input id="website" placeholder="Website">
+<select id="category">
+<option>GP Practice</option><option>Hospital</option><option>Pharmacy</option><option>PCN</option><option>Admin</option><option>Supplier</option><option>Other</option>
+</select>
+<input id="tags" placeholder="Tags e.g. Diabetes, Cardiology, IT">
+<input id="photo" type="file" accept="image/*">
+<textarea id="notes" placeholder="Notes"></textarea>
+<button class="green" onclick="saveContact()">Save contact</button>
+<button class="red" onclick="show('contacts')">Cancel</button>
 </div>
 </section>
 
 </main>
 
 <script>
-let data=JSON.parse(localStorage.getItem("workContactsDash")||'{"contacts":[],"privateNotes":[]}');
+let data=JSON.parse(localStorage.getItem("workContactsV2")||'{"contacts":[],"privateNotes":[]}');
 let editing=null;
 
-function save(){localStorage.setItem("workContactsDash",JSON.stringify(data));render()}
+function save(){localStorage.setItem("workContactsV2",JSON.stringify(data));render()}
 function now(){return new Date().toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}
 function cls(cat){return String(cat||"other").toLowerCase().replace(" practice","").replace(" ","")}
 function show(page){
-["contacts","add","private","backup"].forEach(x=>document.getElementById(x).className=x==page?"":"hidden");
-["tcontacts","tadd","tprivate","tbackup"].forEach(x=>document.getElementById(x).className="tab");
-document.getElementById("t"+page).className="tab active";
+["contacts","favs","orgs","private","backup","edit"].forEach(x=>document.getElementById(x).className=x==page?"":"hidden");
+["tcontacts","tfavs","torgs","tprivate","tbackup"].forEach(x=>{if(document.getElementById(x))document.getElementById(x).className="tab"});
+if(document.getElementById("t"+page))document.getElementById("t"+page).className="tab active";
 render();
 }
 
-function saveContact(){
-if(!surname.value.trim() && !first.value.trim())return;
-let c={
-id:editing||Date.now(),
-title:title.value,
-first:first.value,
-surname:surname.value,
-role:role.value,
-tel:tel.value,
-email:email.value,
-category:category.value,
-notes:notes.value,
-updated:now()
-};
-if(editing){data.contacts=data.contacts.map(x=>x.id==editing?c:x);editing=null}
-else data.contacts.push(c);
-clearForm();save();show("contacts");
-}
+function newContact(){editing=null;clearForm();show("edit")}
 
 function clearForm(){
-editing=null;
-title.value="";first.value="";surname.value="";role.value="";tel.value="";email.value="";notes.value="";
+["title","first","surname","organisation","role","mainPhone","directPhone","mobile","email1","email2","website","tags","notes"].forEach(id=>document.getElementById(id).value="");
+fav.checked=false;photo.value="";
+}
+
+function saveContact(){
+if(!surname.value.trim()&&!first.value.trim()&&!organisation.value.trim())return;
+let file=photo.files[0];
+if(file){
+let reader=new FileReader();
+reader.onload=()=>saveContactFinal(reader.result);
+reader.readAsDataURL(file);
+}else saveContactFinal(editing?(data.contacts.find(c=>c.id==editing)?.photo||""):"");
+}
+
+function saveContactFinal(photoData){
+let c={id:editing||Date.now(),fav:fav.checked,title:title.value,first:first.value,surname:surname.value,organisation:organisation.value,role:role.value,mainPhone:mainPhone.value,directPhone:directPhone.value,mobile:mobile.value,email1:email1.value,email2:email2.value,website:website.value,category:category.value,tags:tags.value,photo:photoData,notes:notes.value,updated:now()};
+if(editing)data.contacts=data.contacts.map(x=>x.id==editing?c:x);else data.contacts.push(c);
+editing=null;clearForm();save();show("contacts");
 }
 
 function editContact(id){
-let c=data.contacts.find(x=>x.id==id);if(!c)return;
-editing=id;
-title.value=c.title||"";first.value=c.first||"";surname.value=c.surname||"";role.value=c.role||"";tel.value=c.tel||"";email.value=c.email||"";category.value=c.category||"Other";notes.value=c.notes||"";
-show("add");
+let c=data.contacts.find(x=>x.id==id);if(!c)return;editing=id;
+fav.checked=!!c.fav;title.value=c.title||"";first.value=c.first||"";surname.value=c.surname||"";organisation.value=c.organisation||"";role.value=c.role||"";mainPhone.value=c.mainPhone||"";directPhone.value=c.directPhone||"";mobile.value=c.mobile||"";email1.value=c.email1||"";email2.value=c.email2||"";website.value=c.website||"";category.value=c.category||"Other";tags.value=c.tags||"";notes.value=c.notes||"";show("edit");
 }
 
-function deleteContact(id){
-if(confirm("Delete this contact?")){data.contacts=data.contacts.filter(x=>x.id!=id);save()}
-}
+function deleteContact(id){if(confirm("Delete this contact?")){data.contacts=data.contacts.filter(x=>x.id!=id);save()}}
+function toggleFav(id){data.contacts=data.contacts.map(c=>{if(c.id==id)c.fav=!c.fav;return c});save()}
 
 function drawContact(c){
-let name=[c.title,c.first,c.surname].filter(Boolean).join(" ");
+let name=[c.title,c.first,c.surname].filter(Boolean).join(" ")||c.organisation||"Unnamed";
 return `<div class="contact ${cls(c.category)}">
-<h3>${name||"Unnamed contact"}</h3>
-<span class="badge">${c.category}</span>
-<p><b>${c.role||""}</b></p>
-${c.tel?`<p>Tel: <a href="tel:${c.tel}">${c.tel}</a></p>`:""}
-${c.email?`<p>Email: <a href="mailto:${c.email}">${c.email}</a></p>`:""}
+${c.photo?`<img src="${c.photo}">`:""}
+<h3>${c.fav?"⭐ ":""}${name}</h3>
+<span class="badge">${c.category}</span>${c.tags?`<span class="badge">${c.tags}</span>`:""}
+<p><b>${c.organisation||""}</b><br>${c.role||""}</p>
+${c.mainPhone?`<p>Main: <a href="tel:${c.mainPhone}">${c.mainPhone}</a></p>`:""}
+${c.directPhone?`<p>Direct: <a href="tel:${c.directPhone}">${c.directPhone}</a></p>`:""}
+${c.mobile?`<p>Mobile: <a href="tel:${c.mobile}">${c.mobile}</a></p>`:""}
+${c.email1?`<p>Email: <a href="mailto:${c.email1}">${c.email1}</a></p>`:""}
+${c.email2?`<p>Email 2: <a href="mailto:${c.email2}">${c.email2}</a></p>`:""}
+${c.website?`<p>Website: <a href="${c.website}" target="_blank">${c.website}</a></p>`:""}
 ${c.notes?`<div class="note">${c.notes}</div>`:""}
 <small>Updated: ${c.updated||""}</small><br>
+<button class="gold" onclick="toggleFav(${c.id})">${c.fav?"Unfavourite":"Favourite"}</button>
 <button class="blue" onclick="editContact(${c.id})">Edit</button>
 <button class="red" onclick="deleteContact(${c.id})">Delete</button>
 </div>`;
 }
 
 function addPrivate(){
-if(!pTitle.value.trim() && !pText.value.trim())return;
+if(!pTitle.value.trim()&&!pText.value.trim())return;
 data.privateNotes.push({id:Date.now(),title:pTitle.value,text:pText.value,time:now()});
 pTitle.value="";pText.value="";save();
 }
-
-function deletePrivate(id){
-if(confirm("Delete this private note?")){data.privateNotes=data.privateNotes.filter(x=>x.id!=id);save()}
-}
+function deletePrivate(id){if(confirm("Delete private note?")){data.privateNotes=data.privateNotes.filter(x=>x.id!=id);save()}}
 
 function render(){
-let q=(search?.value||"").toLowerCase();
-let f=filter?.value||"";
-let contacts=data.contacts.slice().sort((a,b)=>(a.surname||"").localeCompare(b.surname||"") || (a.first||"").localeCompare(b.first||""));
-contacts=contacts.filter(c=>(!f||c.category==f) && JSON.stringify(c).toLowerCase().includes(q));
-total.textContent=data.contacts.length;
-catTotal.textContent=new Set(data.contacts.map(c=>c.category)).size;
-contactList.innerHTML=contacts.length?contacts.map(drawContact).join(""):"<p>No contacts found.</p>";
+let q=(search?.value||"").toLowerCase(),f=filter?.value||"";
+let contacts=data.contacts.slice().sort((a,b)=>(b.fav-a.fav)||((a.surname||"").localeCompare(b.surname||""))||((a.first||"").localeCompare(b.first||"")));
+let filtered=contacts.filter(c=>(!f||c.category==f)&&JSON.stringify(c).toLowerCase().includes(q));
+total.textContent=data.contacts.length;favTotal.textContent=data.contacts.filter(c=>c.fav).length;
+contactList.innerHTML=filtered.length?filtered.map(drawContact).join(""):"<p>No contacts found.</p>";
+favList.innerHTML=data.contacts.filter(c=>c.fav).length?data.contacts.filter(c=>c.fav).map(drawContact).join(""):"<p>No favourites yet.</p>";
+
+let orgs={};data.contacts.forEach(c=>{let o=c.organisation||"No organisation";if(!orgs[o])orgs[o]=[];orgs[o].push(c)});
+orgList.innerHTML=Object.keys(orgs).sort().map(o=>`<div class="contact other"><h3>${o}</h3>${orgs[o].map(drawContact).join("")}</div>`).join("")||"<p>No organisations yet.</p>";
 
 privateList.innerHTML=data.privateNotes.length?data.privateNotes.slice().reverse().map(n=>`<div class="contact other"><h3>${n.title}</h3><div class="note">${n.text}</div><small>${n.time}</small><br><button class="red" onclick="deletePrivate(${n.id})">Delete</button></div>`).join(""):"<p>No private notes.</p>";
 }
@@ -198,25 +205,11 @@ privateList.innerHTML=data.privateNotes.length?data.privateNotes.slice().reverse
 function exportData(){
 let a=document.createElement("a");
 a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"text/plain"}));
-a.download="work-contacts-backup.txt";
+a.download="work-contacts-v2-backup.txt";
 a.click();
 }
-
-function importData(){
-try{
-data=JSON.parse(importBox.value);
-save();
-alert("Backup restored");
-}catch(e){alert("Could not restore backup")}
-}
-
-function resetAll(){
-if(confirm("Delete all contacts and private notes?")){
-data={contacts:[],privateNotes:[]};
-save();
-}
-}
-
+function importData(){try{data=JSON.parse(importBox.value);save();alert("Restored")}catch(e){alert("Could not restore")}}
+function resetAll(){if(confirm("Delete all contacts and notes?")){data={contacts:[],privateNotes:[]};save()}}
 if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js")}
 render();
 </script>
