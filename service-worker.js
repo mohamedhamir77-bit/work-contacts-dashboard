@@ -1,4 +1,4 @@
-const CACHE = "work-contacts-v1";
+const CACHE = "work-contacts-v3";
 
 self.addEventListener("install", event => {
   event.waitUntil(
